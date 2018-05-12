@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Simply Supported Beam Deflections</title>
+<script type="text/javascript">
+var can,ctx,can1,ctx1;
+var cw,ch;
+var start,end,step;
+var slider1,slider2;
+var length,y0;
+var sup1,sup2,rx1,rx2;
+var Wscale=1;
+var Vscale=0.1;
+var Mscale=0.005;
+var shear,moment,slope,def;
+var insup1,insup2;//integrating moment two times from 0 to the support 
+var c1,c2; 
+var color={
+support:"rgba(0,0,255,0.3)",
+load:"rgba(0,127,196,0.4)",
+shear:"rgba(0,0,255,0.15)",
+moment:"rgba(255,0,255,0.15)"
+}
+
+function init(){
+	can=document.getElementById("can");
+	ctx=can.getContext("2d");
+	cw=can.width;
+	ch=can.height;
+	y0=ch/2;
+	slider1=document.getElementById("slider1");
+	slider2=document.getElementById("slider2");
+	document.getElementsByClassName("colorbox")[0].style.backgroundColor=color.load;
+	document.getElementsByClassName("colorbox")[1].style.backgroundColor=color.shear;
+	document.getElementsByClassName("colorbox")[2].style.backgroundColor=color.moment;
+	update();
+}	
+
+function update(){
+	W=new Function("x", "return " + document.getElementById("input1").value);
+	start=0;
+	end=eval(document.getElementById("input2").value);
+	step=eval(document.getElementById("input3").value);
+	sliderUpdate();
+	/*sup1=parseInt(document.getElementById("input4").value);
+	sup2=parseInt(document.getElementById("input5").value);
+	sup1>sup2 ? sup1=[sup2,sup2=sup1][0]:{};
+	
+	
+	document.getElementById("marker1").innerText=sup1;
+	document.getElementById("marker2").innerText=sup2;
+	document.getElementById("marker1").style.left=""+(4+sup1)+"px";
+	document.getElementById("marker2").style.left=""+(4+sup2)+"px";*/
+}
+function sliderUpdate(){
+	slider1.style.width=end+"px";
+	slider1.min=start;
+	slider1.max=end;
+	slider2.style.width=end+"px";
+	slider2.min=start;
+	slider2.max=end;
+	
+	sup1=parseInt(slider1.value);
+	sup2=parseInt(slider2.value);
+	document.getElementById("marker1").innerText=sup1;
+	document.getElementById("marker2").innerText=sup2;
+	
+	sup1>sup2 ? sup1=[sup2,sup2=sup1][0]:{};
+	
+
+}
+function clearCanvas(){
+	ctx.clearRect(0,0,cw,ch)}
+function draw(){
+	clearCanvas();
+	update();
+	getReactions();
+	defarray=[];
+	ctx.strokeStyle=color.support;
+	ctx.beginPath();
+	ctx.moveTo(sup1,0);
+	ctx.lineTo(sup1,ch);
+	ctx.moveTo(sup2,0);
+	ctx.lineTo(sup2,ch);	
+	ctx.stroke();
+	
+	ctx.strokeStyle=color.load;
+	for(var x=start;x<end;x+=step){
+		if(Math.floor(x)!==Math.floor(x-step)){
+			ctx.beginPath();
+			ctx.moveTo(x,y0-W(x));
+			ctx.lineTo(x,y0);	
+			ctx.stroke();
+		}
+	}
+	shear=0;
+	moment=0;
+	slope=0;
+	def=0;
+	for(var x=start;x<sup1;x+=step){
+		drawStep(x);
+	}
+	insup1=def;
+	shear+=rx1; 
+	for(var x=sup1;x<sup2;x+=step){
+		drawStep(x);
+	}
+	insup2=def;
+	shear+=rx2; 
+	for(var x=sup2;x<end;x+=step){
+		drawStep(x);
+	}
+	c1=(insup1-insup2)/(sup2-sup1);
+	c2=(insup2*sup1-insup1*sup2)/(sup2-sup1);
+	
+	shear=0;
+	moment=0;
+	slope=0;
+	def=0;
+	ctx.strokeStyle="rgba(0,0,0,0.8)";
+	ctx.beginPath();
+	for(var x=start;x<sup1;x+=step){
+		defStep(x);
+	}
+	shear+=rx1; 
+	for(var x=sup1;x<sup2;x+=step){
+		defStep(x);
+	}
+	shear+=rx2; 
+	for(var x=sup2;x<end;x+=step){
+		defStep(x);
+	}
+	ctx.stroke();
+}
+function drawStep(x){
+	shear+=W(x)*step; 
+	moment+=shear*step;
+	slope+=moment*step;
+	def+=slope*step;
+	if(Math.floor(x)!==Math.floor(x-step)){
+		ctx.strokeStyle=color.shear;
+		ctx.beginPath();
+		ctx.moveTo(x,y0-shear*Vscale);
+		ctx.lineTo(x,y0);	
+		ctx.stroke();
+		ctx.strokeStyle=color.moment;
+		ctx.beginPath();
+		ctx.moveTo(x,y0-moment*Mscale);
+		ctx.lineTo(x,y0);	
+		ctx.stroke();
+	}
+}
+function defStep(x){
+	shear+=W(x)*step; 
+	moment+=shear*step;
+	slope+=moment*step;
+	def+=slope*step;
+	if(Math.floor(x)!==Math.floor(x-step)){
+		ctx.lineTo(x,y0+(def+c1*x+c2)/5000000);	
+	}
+}
+
+function getReactions(){
+	var mom1=0;
+	var mom2=0; 
+	for(var x=start;x<end;x+=step){
+		mom1+=(sup1-x)*W(x)*step; 
+		mom2+=(sup2-x)*W(x)*step; 
+	}
+	rx1=mom2/(sup1-sup2);
+	rx2=mom1/(sup2-sup1); 
+
+}
+</script>
+<style>
+.marker{
+position:absolute;
+text-align:center;
+}
+.colorbox{
+width:12px;
+height:12px;
+display:inline-block;
+}
+</style>
+	<title></title>
+</head>
+<body onload="init()" id="body" bgcolor="#ddd">
+Load<input type="text" size="40" id="input1" value="(x%40-x%80)+20">
+Length<input type="text" size="10" id="input2" value="400">
+Step<input type="text" size="10" id="input3" value="0.1">
+
+<button onclick="draw()">Draw</button>
+
+<canvas height="400" width="1000" id="can"></canvas><br>
+
+<input type="range" id="slider1" value="0" onchange="draw()"></input><span class="marker" id="marker1"></span><br>
+<input type="range" id="slider2" value="300" onchange="draw()"></input><span class="marker" id="marker2"></span><br>
+<span class="colorbox"></span>Load
+<span class="colorbox"></span>Shear
+<span class="colorbox"></span>Moment
+
+</body></html>
