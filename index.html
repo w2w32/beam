@@ -33,7 +33,7 @@ function init(){
 	document.getElementsByClassName("colorbox")[0].style.backgroundColor=color.load;
 	document.getElementsByClassName("colorbox")[1].style.backgroundColor=color.shear;
 	document.getElementsByClassName("colorbox")[2].style.backgroundColor=color.moment;
-	update();
+	draw();
 }	
 
 function update(){
@@ -186,7 +186,7 @@ display:inline-block;
 	<title></title>
 </head>
 <body onload="init()" id="body" bgcolor="#ddd">
-Load<input type="text" size="40" id="input1" value="(x%40-x%80)+20">
+Load<input type="text" size="40" id="input1" value="x>399?200:0">
 Length<input type="text" size="10" id="input2" value="400">
 Step<input type="text" size="10" id="input3" value="0.1">
 
