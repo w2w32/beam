@@ -21,7 +21,9 @@ load:"rgba(0,127,196,0.4)",
 shear:"rgba(0,0,255,0.15)",
 moment:"rgba(255,0,255,0.15)"
 }
-
+function p(v,point,load){
+return Math.abs(v-point)<1?load:0;
+}
 function init(){
 	can=document.getElementById("can");
 	ctx=can.getContext("2d");
@@ -35,7 +37,6 @@ function init(){
 	document.getElementsByClassName("colorbox")[2].style.backgroundColor=color.moment;
 	draw();
 }	
-
 function update(){
 	W=new Function("x", "return " + document.getElementById("input1").value);
 	start=0;
@@ -67,7 +68,6 @@ function sliderUpdate(){
 	
 	sup1>sup2 ? sup1=[sup2,sup2=sup1][0]:{};
 	
-
 }
 function clearCanvas(){
 	ctx.clearRect(0,0,cw,ch)}
@@ -97,18 +97,18 @@ function draw(){
 	moment=0;
 	slope=0;
 	def=0;
-	for(var x=start;x<sup1;x+=step){
-		drawStep(x);
+	for(var i=0;i<(sup1-start)/step;i++){
+		drawStep(start+i*step);
 	}
 	insup1=def;
 	shear+=rx1; 
-	for(var x=sup1;x<sup2;x+=step){
-		drawStep(x);
+	for(var i=0;i<(sup2-sup1)/step;i++){
+		drawStep(sup1+i*step);
 	}
 	insup2=def;
 	shear+=rx2; 
-	for(var x=sup2;x<end;x+=step){
-		drawStep(x);
+	for(var i=0;i<(end-sup2)/step;i++){
+		drawStep(sup2+i*step);
 	}
 	c1=(insup1-insup2)/(sup2-sup1);
 	c2=(insup2*sup1-insup1*sup2)/(sup2-sup1);
@@ -119,16 +119,16 @@ function draw(){
 	def=0;
 	ctx.strokeStyle="rgba(0,0,0,0.8)";
 	ctx.beginPath();
-	for(var x=start;x<sup1;x+=step){
-		defStep(x);
+	for(var i=0;i<(sup1-start)/step;i++){
+		defStep(start+i*step);
 	}
 	shear+=rx1; 
-	for(var x=sup1;x<sup2;x+=step){
-		defStep(x);
+	for(var i=0;i<(sup2-sup1)/step;i++){
+		defStep(sup1+i*step);
 	}
 	shear+=rx2; 
-	for(var x=sup2;x<end;x+=step){
-		defStep(x);
+	for(var i=0;i<(end-sup2)/step;i++){
+		defStep(sup2+i*step);
 	}
 	ctx.stroke();
 }
@@ -159,7 +159,6 @@ function defStep(x){
 		ctx.lineTo(x,y0+(def+c1*x+c2)/5000000);	
 	}
 }
-
 function getReactions(){
 	var mom1=0;
 	var mom2=0; 
@@ -169,7 +168,6 @@ function getReactions(){
 	}
 	rx1=mom2/(sup1-sup2);
 	rx2=mom1/(sup2-sup1); 
-
 }
 </script>
 <style>
@@ -186,7 +184,7 @@ display:inline-block;
 	<title></title>
 </head>
 <body onload="init()" id="body" bgcolor="#ddd">
-Load<input type="text" size="40" id="input1" value="x>399?200:0">
+Load<input type="text" size="40" id="input1" value="p(x,340,200)">
 Length<input type="text" size="10" id="input2" value="400">
 Step<input type="text" size="10" id="input3" value="0.1">
 
