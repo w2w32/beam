@@ -22,7 +22,7 @@ shear:"rgba(0,0,255,0.15)",
 moment:"rgba(255,0,255,0.15)"
 }
 function p(v,point,load){
-return Math.abs(v-point)<1?load:0;
+return Math.abs(v-point)<step/2?load/step:0;
 }
 function init(){
 	can=document.getElementById("can");
