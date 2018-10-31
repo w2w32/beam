@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html><head>
 <title>Simply Supported Beam Deflections</title>
 <script type="text/javascript">
 var can,ctx,can1,ctx1;
@@ -20,6 +19,9 @@ support:"rgba(0,0,255,0.3)",
 load:"rgba(0,127,196,0.4)",
 shear:"rgba(0,0,255,0.15)",
 moment:"rgba(255,0,255,0.15)"
+}
+function segIndex(x){
+return Math.floor(x/step);
 }
 function p(v,point,load){
 return Math.abs(v-point)<step/2?load/step:0;
@@ -97,18 +99,19 @@ function draw(){
 	moment=0;
 	slope=0;
 	def=0;
-	for(var i=0;i<(sup1-start)/step;i++){
+	for(var i=0;i<(end-start)/step;i++){
 		drawStep(start+i*step);
-	}
-	insup1=def;
-	shear+=rx1; 
-	for(var i=0;i<(sup2-sup1)/step;i++){
-		drawStep(sup1+i*step);
-	}
-	insup2=def;
-	shear+=rx2; 
-	for(var i=0;i<(end-sup2)/step;i++){
-		drawStep(sup2+i*step);
+		if(i===Math.floor((sup1-start)/step)){
+			insup1=def;
+			shear+=rx1; 
+		}
+		if(i===Math.floor((sup2-sup1)/step)){
+			insup2=def;
+			shear+=rx2; 
+		}
+		if(Math.abs(i-140/step)<10){
+			console.log(i+": x="+(start+i*step).toFixed(2)+", V="+shear.toFixed(2)+", M="+moment.toFixed(2));
+		}
 	}
 	c1=(insup1-insup2)/(sup2-sup1);
 	c2=(insup2*sup1-insup1*sup2)/(sup2-sup1);
@@ -119,24 +122,27 @@ function draw(){
 	def=0;
 	ctx.strokeStyle="rgba(0,0,0,0.8)";
 	ctx.beginPath();
-	for(var i=0;i<(sup1-start)/step;i++){
+	for(var i=0;i<(end-start)/step;i++){
 		defStep(start+i*step);
-	}
-	shear+=rx1; 
-	for(var i=0;i<(sup2-sup1)/step;i++){
-		defStep(sup1+i*step);
-	}
-	shear+=rx2; 
-	for(var i=0;i<(end-sup2)/step;i++){
-		defStep(sup2+i*step);
+		if(i===Math.floor((sup1-start)/step)){
+			insup1=def;
+			shear+=rx1; 
+		}
+		if(i===Math.floor((sup2-sup1)/step)){
+			insup2=def;
+			shear+=rx2; 
+		}
 	}
 	ctx.stroke();
 }
 function drawStep(x){
-	shear+=W(x)*step; 
-	moment+=shear*step;
-	slope+=moment*step;
 	def+=slope*step;
+	slope+=moment*step;
+	moment+=shear*step;
+	shear+=W(x)*step; 
+	
+	
+	
 	if(Math.floor(x)!==Math.floor(x-step)){
 		ctx.strokeStyle=color.shear;
 		ctx.beginPath();
@@ -151,10 +157,13 @@ function drawStep(x){
 	}
 }
 function defStep(x){
+def+=slope*step;
+slope+=moment*step;
+moment+=shear*step;
 	shear+=W(x)*step; 
-	moment+=shear*step;
-	slope+=moment*step;
-	def+=slope*step;
+	
+	
+	
 	if(Math.floor(x)!==Math.floor(x-step)){
 		ctx.lineTo(x,y0+(def+c1*x+c2)/5000000);	
 	}
@@ -184,7 +193,7 @@ display:inline-block;
 	<title></title>
 </head>
 <body onload="init()" id="body" bgcolor="#ddd">
-Load<input type="text" size="40" id="input1" value="p(x,340,200)">
+Load<input type="text" size="40" id="input1" value="x<50?30:0+p(x,340,200);">
 Length<input type="text" size="10" id="input2" value="400">
 Step<input type="text" size="10" id="input3" value="0.1">
 
@@ -192,10 +201,9 @@ Step<input type="text" size="10" id="input3" value="0.1">
 
 <canvas height="400" width="1000" id="can"></canvas><br>
 
-<input type="range" id="slider1" value="0" onchange="draw()"></input><span class="marker" id="marker1"></span><br>
-<input type="range" id="slider2" value="300" onchange="draw()"></input><span class="marker" id="marker2"></span><br>
-<span class="colorbox"></span>Load
-<span class="colorbox"></span>Shear
-<span class="colorbox"></span>Moment
-
+<input type="range" id="slider1" value="0" onchange="draw()" min="0" max="400" style="width: 400px;"><span class="marker" id="marker1">0</span><br>
+<input type="range" id="slider2" value="260" onchange="draw()" min="0" max="400" style="width: 400px;"><span class="marker" id="marker2">260</span><br>
+<span class="colorbox" style="background-color: rgba(0, 127, 196, 0.4);"></span>Load
+<span class="colorbox" style="background-color: rgba(0, 0, 255, 0.14902);"></span>Shear
+<span class="colorbox" style="background-color: rgba(255, 0, 255, 0.14902);"></span>Moment
 </body></html>
